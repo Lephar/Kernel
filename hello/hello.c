@@ -1,8 +1,9 @@
-#include "linux/moduleparam.h"
 #include <linux/init.h>
+#include <linux/stat.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/printk.h>
+#include <linux/moduleparam.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Lephar");
@@ -10,6 +11,7 @@ MODULE_DESCRIPTION("Hello World Module");
 
 int hello_data = 3;
 module_param(hello_data, int, 0);
+MODULE_PARM_DESC(hello_data, "An example data");
 
 static int __init hello_init(void)
 {
