@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "linux"
+		},
+		{
+			"path": "param"
 		}
 	],
 	"settings": {

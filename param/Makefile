@@ -1,4 +1,4 @@
-obj-m += hello.o
+obj-m += param.o
 
 PWD := $(CURDIR)
 
