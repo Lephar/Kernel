@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "param"
+		},
+		{
+			"path": "chardev"
 		}
 	],
 	"settings": {
