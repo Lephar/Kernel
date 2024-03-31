@@ -1,16 +1,7 @@
 {
 	"folders": [
 		{
-			"path": "hello"
-		},
-		{
-			"path": "linux"
-		},
-		{
-			"path": "param"
-		},
-		{
-			"path": "chardev"
+			"path": "."
 		}
 	],
 	"settings": {

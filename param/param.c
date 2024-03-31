@@ -7,7 +7,7 @@
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Lephar");
-MODULE_DESCRIPTION("Hello World Module");
+MODULE_DESCRIPTION("Parameter Passing Module");
 
 static int hello_data = 3;
 module_param(hello_data, int, 0);
