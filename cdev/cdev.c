@@ -11,7 +11,7 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Lephar");
 MODULE_DESCRIPTION("Character Device Module");
 
-#define DEVICE_NAME "chardev"
+#define DEVICE_NAME "cdev"
 
 static int major_number;
 static struct class *device_cls;
