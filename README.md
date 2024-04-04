@@ -2,11 +2,14 @@
 Dependencies, configurations and project files for Linux Kernel Module Development journey.
 
 ## Instructions
+### Basic Setup
 Kernel headers and build tools are needed to compile kernel modules. This guide will detail instructions for Arch Linux. You can also follow your distro-specific instructions to install these requirements:
 ```
 pacman -Syu base-devel linux-headers
 ```
+That's it! You are ready to compile your own kernel modules!
 
+### Recommended Setup
 Although the headers are enough to successfuly build the module, it is recommended to configure and build your own kernel to help with our specific workflow needs. This repository includes reference to [Linus Torvalds's mainline Linux mirror](https://github.com/torvalds/linux) as submodule. I try to keep it as up-to-date as possible by bumping it to latest release tag. You can follow the instructions to build and install the mainline kernel.
 
 Following packages are needed to build your own kernel:
@@ -34,8 +37,6 @@ When you fetch the updated source code and some new entries are added to the con
 make olddefconfig
 ```
 
-As an alternative way, 
-
 Then compile the Linux kernel with all the available threads:
 ```
 make -j$(nproc)
@@ -46,12 +47,10 @@ Congratulations! You have configured and built your own kernel! To install it to
 sudo make install
 ```
 
+You are now ready to build your own modules.
 
-This kernel usually enough for us.  To 
-
-For security updates and more compatibility with your distro you can also use [Greg Kroah-Hartman's Linux stable branch](https://github.com/gregkh/linux) and apply your 
-
-Kernel source code can be downloaded from [The Linux Kernel Archives](https://kernel.org/)
+### Distro-Patched Stable Setup
+For security updates and more compatibility with your distro you can also use [Greg Kroah-Hartman's Linux stable branch](https://github.com/gregkh/linux) and apply your distro-specific patches to your kernel source.
 
 Distro-specific patches can be acquired from their respective repositories, e.g. [Arch Linux kernel sources, with patches](https://github.com/archlinux/linux/releases)
 
