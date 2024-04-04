@@ -2,6 +2,55 @@
 Dependencies, configurations and project files for Linux Kernel Module Development journey.
 
 ## Instructions
+Kernel headers and build tools are needed to compile kernel modules. This guide will detail instructions for Arch Linux. You can also follow your distro-specific instructions to install these requirements:
+```
+pacman -Syu base-devel linux-headers
+```
+
+Although the headers are enough to successfuly build the module, it is recommended to configure and build your own kernel to help with our specific workflow needs. This repository includes reference to [Linus Torvalds's mainline Linux mirror](https://github.com/torvalds/linux) as submodule. I try to keep it as up-to-date as possible by bumping it to latest release tag. You can follow the instructions to build and install the mainline kernel.
+
+Following packages are needed to build your own kernel:
+```
+pacman -Syu xmlto kmod inetutils bc libelf git cpio perl tar xz 
+```
+
+Clone this repository with `--recursive` argument to also clone aforementioned repository:
+```
+git clone --recursive git@github.com:Lephar/Kernel.git
+```
+
+Change into Linux directory:
+```
+cd Kernel/linux
+```
+
+Configure the kernel to your taste using one of the following with `make` command: `config`, `menuconfig`, `nconfig`, `gconfig`, `xconfig`. Or you can simply use the default configuration, which is sufficient for most use cases:
+```
+make defconfig
+```
+
+When you fetch the updated source code and some new entries are added to the configuration, you can preserve the old config and set the default values to new configuration options with the following command:
+```
+make olddefconfig
+```
+
+As an alternative way, 
+
+Then compile the Linux kernel with all the available threads:
+```
+make -j$(nproc)
+```
+
+Congratulations! You have configured and built your own kernel! To install it to your system:
+```
+sudo make install
+```
+
+
+This kernel usually enough for us.  To 
+
+For security updates and more compatibility with your distro you can also use [Greg Kroah-Hartman's Linux stable branch](https://github.com/gregkh/linux) and apply your 
+
 Kernel source code can be downloaded from [The Linux Kernel Archives](https://kernel.org/)
 
 Distro-specific patches can be acquired from their respective repositories, e.g. [Arch Linux kernel sources, with patches](https://github.com/archlinux/linux/releases)
