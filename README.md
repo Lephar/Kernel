@@ -55,7 +55,7 @@ sudo make install
 Congratulations! You have configured, built and installed your own kernel. You are now ready to build your own kernel modules.
 
 ### Distro-Patched Stable-Branch Setup
-Instead of Linus' mainline branch, you can acquire [Greg Kroah-Hartman's stable-branch mirror](https://github.com/gregkh/linux). This branch has minor version tags which gets the security updates on top of mainline-branch.
+Instead of Linus' mainline-branch, you can acquire [Greg Kroah-Hartman's stable-branch mirror](https://github.com/gregkh/linux). This branch has minor version tags which gets the security updates on top of mainline-branch.
 
 Better yet, you can get to your distro's kernel repository, which are usually based on stable-branch kernel. These branches get distro-specific patches optimized to your distro's use case, on top of official security updates. This setup will offer more security and more compatibility with your current system. We will use latest release tag of [Arch Linux kernel sources, with patches](https://github.com/archlinux/linux).
 
@@ -70,7 +70,7 @@ If config has changed between versions, it's still necessary to manually configu
 
 When it comes to kernel compilation, the default choice is `gcc`. All of the above `make` commands make use of it unless set otherwise. It's important to use the same compiler version when compiling the kernel and the modules, or you will get "version magic mismatch".
 
-Even though it's not necessary to set one, a language server makes a great difference while writing the code. When using `gcc`, `ccls` offers great compatibility.
+Even though it's not necessary to set one, a language server makes a great difference while writing the code. When using `gcc`, `ccls` offers great compatibility while also supporting realtive paths.
 
 In order to use language server, it needs to know locations of headers and other compilation tokens for indexing. All these information is kept inside `compile_commands.json` file. It can be generated using an existing script in source directory after the compilation of the kernel:
 ```
