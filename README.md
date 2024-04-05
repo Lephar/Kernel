@@ -37,14 +37,9 @@ When you fetch the updated source code and some new entries are added to the con
 make olddefconfig
 ```
 
-Then compile the Linux kernel with all the available threads:
+Then compile the Linux kernel and configured modules with all the available threads. This is equivalent to calling `vmlinux`, `modules` and `bzImage` separately:
 ```
-make -j$(nproc)
-```
-
-Compile the necessary kernel modules against the newly built kernel:
-```
-make -j$(nproc) modules
+make -j$(nproc) all
 ```
 
 Now install the modules to your system, you need admin rights to do that:
@@ -69,30 +64,50 @@ Almost every distro also customizes the kernel configuration depending on their 
 zcat /proc/config.gz > .config
 ```
 
-If config changed between versions, it's still necessary to manually configure or run `olddefconfig` over previous command. Other than that, it's all a similar process.
+If config has changed between versions, it's still necessary to manually configure or run `olddefconfig` over previous command. Other than that, it's all a similar process.
 
 ## Compiler Support
 
-If using Clang, compiler-specific config can be added to .config file using the following command:
-```
-make CC=clang olddefconfig
-```
+When it comes to kernel compilation, the default choice is `gcc`. All of the above `make` commands make use of it unless set otherwise. It's important to use the same compiler version when compiling the kernel and the modules, or you will get "version magic mismatch".
 
-To compile the kernel on multiple threads with the created config using Clang compiler:
-```
-make CC=clang -j$(nproc)
-```
+Even though it's not necessary to set one, a language server makes a great difference while writing the code. When using `gcc`, `ccls` offers great compatibility.
 
-To use code assist with `clangd` language server, `compile_commands.json` can be created using the following script:
+In order to use language server, it needs to know locations of headers and other compilation tokens for indexing. All these information is kept inside `compile_commands.json` file. It can be generated using an existing script in source directory after the compilation of the kernel:
 ```
 scripts/clang-tools/gen_compile_commands.py
 ```
 
-Copy the created `compile_commands.json` file into the desired project directory (e.g. [Hello World Example](HelloWorld)) and you are good to go!
+Note that, this script was originally written to generate compilation databse for `clangd` language server, but can also be consumed by `ccls`.
+`clangd` can also be used with `gcc` but some `gcc` extensions and compiler arguments may be incompatible and unsupported.
 
-Projects can be built using `Makefile` in the project folder:
+Even though it is not without issues, `clang` compiler and `LLVM` toolchain can also be used to compile kernel and modules.
+
+To switch compilers:
+```
+make CC=clang -j$(nproc) all
+```
+
+To switch whole toolchain:
+```
+make LLVM=1 -j$(nproc) all
+```
+
+Note that it is important to specify the same toolchain parameter with ALL above `make` command.
+
+While using the `LLVM` toolchain, `clangd` is the obvious language server choice. Its compilation database is generated with the exact same script.
+
+
+You must then copy the created `compile_commands.json` file into root of your workspace directory and you are good to go!
+
+## Example Modules
+Every individual module in this repository can be built using `Makefile` in their respective project folders:
 ```
 make all
+```
+
+To show info on the compiled module:
+```
+modinfo <MODULE_NAME>.ko
 ```
 
 To insert compiled module into the kernel:
@@ -100,17 +115,24 @@ To insert compiled module into the kernel:
 sudo insmod <MODULE_NAME>.ko
 ```
 
+To list all the inserted modules in the system:
+```
+lsmod
+```
+
 To remove inserted module from the kernel:
 ```
 sudo rmmod <MODULE_NAME>
 ```
 
-Kernel module output can be accessed on system logs using `journalctl`:
+Meanwhile, kernel module output can be viewed on system logs using `journalctl`:
 ```
-journalctl -f
+journalctl -f -k
 ```
 
 Project files can be cleaned using `Makefile`:
 ```
 make clean
 ```
+
+That's all that is necessary, happy kernel hacking!
