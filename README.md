@@ -9,7 +9,7 @@ pacman -Syu base-devel linux-headers
 ```
 That's it! You are ready to compile your own kernel modules!
 
-### Recommended Setup
+### Mainline Setup
 Although the headers are enough to successfuly build the module, it is recommended to configure and build your own kernel to help with our specific workflow needs. This repository includes reference to [Linus Torvalds's mainline Linux mirror](https://github.com/torvalds/linux) as submodule. I try to keep it as up-to-date as possible by bumping it to latest release tag. You can follow the instructions to build and install the mainline kernel.
 
 Following packages are needed to build your own kernel:
@@ -59,20 +59,19 @@ sudo make install
 
 Congratulations! You have configured, built and installed your own kernel. You are now ready to build your own kernel modules.
 
-### Distro-Patched Stable Setup
-For security updates and more compatibility with your distro you can also use [Greg Kroah-Hartman's Linux stable branch](https://github.com/gregkh/linux) and apply your distro-specific patches to your kernel source.
+### Distro-Patched Stable-Branch Setup
+Instead of Linus' mainline branch, you can acquire [Greg Kroah-Hartman's stable-branch mirror](https://github.com/gregkh/linux). This branch has minor version tags which gets the security updates on top of mainline-branch.
 
-Distro-specific patches can be acquired from their respective repositories, e.g. [Arch Linux kernel sources, with patches](https://github.com/archlinux/linux/releases)
+Better yet, you can get to your distro's kernel repository, which are usually based on stable-branch kernel. These branches get distro-specific patches optimized to your distro's use case, on top of official security updates. This setup will offer more security and more compatibility with your current system. We will use latest release tag of [Arch Linux kernel sources, with patches](https://github.com/archlinux/linux).
 
-To apply the patch, execute the following command in the source directory after copying the .patch file there (some modification of paths may be necessary on .patch file):
-```
-patch -ruN -p0 < linux-<VERSION>.patch
-```
-
-Current kernel config can be copied from the running system using the following command:
+Almost every distro also customizes the kernel configuration depending on their use case. So, we can skip all the hassle of configuration and get the current kernel config using `procfs` from running system and write it into `.config` file with following command. Just make sure to run it inside cloned kernel repository directory:
 ```
 zcat /proc/config.gz > .config
 ```
+
+If config changed between versions, it's still necessary to manually configure or run `olddefconfig` over previous command. Other than that, it's all a similar process.
+
+## Compiler Support
 
 If using Clang, compiler-specific config can be added to .config file using the following command:
 ```
