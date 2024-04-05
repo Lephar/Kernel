@@ -1,7 +1,7 @@
 # Linux Kernel Module Development
 Dependencies, configurations and project files for Linux Kernel Module Development journey.
 
-## Instructions
+## Development Environment
 ### Basic Setup
 Kernel headers and build tools are needed to compile kernel modules. This guide will detail instructions for Arch Linux. You can also follow your distro-specific instructions to install these requirements:
 ```
@@ -42,12 +42,22 @@ Then compile the Linux kernel with all the available threads:
 make -j$(nproc)
 ```
 
-Congratulations! You have configured and built your own kernel! To install it to your system:
+Compile the necessary kernel modules against the newly built kernel:
+```
+make -j$(nproc) modules
+```
+
+Now install the modules to your system, you need admin rights to do that:
+```
+sudo make modules_install
+```
+
+And you can install the kernel at last:
 ```
 sudo make install
 ```
 
-You are now ready to build your own modules.
+Congratulations! You have configured, built and installed your own kernel. You are now ready to build your own kernel modules.
 
 ### Distro-Patched Stable Setup
 For security updates and more compatibility with your distro you can also use [Greg Kroah-Hartman's Linux stable branch](https://github.com/gregkh/linux) and apply your distro-specific patches to your kernel source.
