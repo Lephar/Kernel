@@ -11,7 +11,7 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Lephar");
 MODULE_DESCRIPTION("Character Device Module");
 
-#define DEVICE_NAME "dummydummycdev"
+#define DEVICE_NAME "cdev"
 
 static int result;
 static long error;

@@ -4,12 +4,19 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Lephar");
 MODULE_DESCRIPTION("File Operations Module");
 
-static int major_number;
+static int result;
+static long error;
 
-static struct class *device_cls;
-static struct device *device_info;
+static int major_number = 0;
+static int minor_offset = 0;
+static int minor_count = 1;
 
-static struct file_operations device_fops = {
+static dev_t dev;
+static struct cdev cdev;
+static struct class* class;
+static struct device* device;
+
+static struct file_operations fops = {
     .open = device_open,
     .read = device_read,
     .write = device_write,
@@ -20,22 +27,59 @@ static atomic_t already_open = ATOMIC_INIT(CDEV_NOT_IN_USE);
 
 static int __init chardev_init(void)
 {
-    major_number = register_chrdev(0, DEVICE_NAME, &device_fops);
+    result = alloc_chrdev_region(&dev, minor_offset, minor_count, DEVICE_NAME);
 
-    if (major_number < 0) {
-        pr_alert("Registering char device failed with error code %d.\n", major_number);
-        
-        return major_number;
+    if(result) {
+        error = result;
+        pr_alert("Allocating major number failed with error code %ld\n", error);
+        goto error_alloc_chrdev_region;
     }
 
-    pr_info("Device is assigned major number %d.\n", major_number);
+    major_number = MAJOR(dev);
+    minor_offset = MINOR(dev);
 
-    device_cls = class_create(DEVICE_NAME);
-    device_info = device_create(device_cls, NULL, MKDEV(major_number, 0), NULL, DEVICE_NAME);
+    pr_info("Allocated character device region:\n");
+    pr_info("\tMajor number: %d\n", major_number);
+    pr_info("\tMinor number offset: %d\n", minor_offset);
+    pr_info("\tMinor number count: %d\n", minor_count);
 
-    pr_info("/dev/%s is created.\n", device_info->class->name);
+    cdev_init(&cdev, &fops);
+    result = cdev_add(&cdev, dev, minor_count);
+
+    if(result) {
+        error = result;
+        pr_alert("Adding character device failed with error code %ld\n", error);
+        goto error_cdev_add;
+    }
+
+    class = class_create(DEVICE_NAME);
+
+    if(IS_ERR(class)) {
+        error = PTR_ERR(class);
+        pr_alert("Class creation failed with error code %ld\n", error);
+        goto error_class_create;
+    }
+
+    device = device_create(class, NULL, dev, NULL, DEVICE_NAME);
+
+    if(IS_ERR(device)) {
+        error = PTR_ERR(device);
+        pr_alert("Device creation failed with error code %ld\n", error);
+        goto error_device_create;
+    }
+
+    pr_info("/dev/%s is created\n", DEVICE_NAME);
 
     return 0;
+
+    error_device_create:
+        class_destroy(class);
+    error_class_create:
+        cdev_del(&cdev);
+    error_cdev_add:
+        unregister_chrdev_region(dev, minor_count);
+    error_alloc_chrdev_region:
+        return error;
 }
 
 static int device_open(struct inode *inode, struct file *file) {
@@ -72,14 +116,10 @@ static int device_release(struct inode *inode, struct file *file) {
 
 static void __exit chardev_exit(void)
 {
-    device_destroy(device_cls, MKDEV(major_number, 0));
-    class_destroy(device_cls);
-
-    pr_info("/dev/%s is destroyed.\n", DEVICE_NAME);
-
-    unregister_chrdev(major_number, DEVICE_NAME);
-    
-    pr_info("Major number %d is unregistered.\n", major_number);
+    device_destroy(class, dev);
+    class_destroy(class);
+    cdev_del(&cdev);
+    unregister_chrdev_region(dev, minor_count);
 }
 
 module_init(chardev_init);
