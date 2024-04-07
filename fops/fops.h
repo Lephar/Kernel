@@ -15,7 +15,7 @@
 #include <linux/version.h>
 
 #define SUCCESS 0
-#define BUFLEN 255
+#define BUFLEN 256
 #define DEVICE_NAME "fops"
 
 enum {

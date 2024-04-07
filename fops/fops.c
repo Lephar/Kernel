@@ -25,6 +25,9 @@ static struct file_operations fops = {
 
 static atomic_t already_open = ATOMIC_INIT(CDEV_NOT_IN_USE);
 
+static size_t counter = 0;
+static char message[BUFLEN];
+
 static int __init chardev_init(void)
 {
     result = alloc_chrdev_region(&dev, minor_offset, minor_count, DEVICE_NAME);
@@ -95,14 +98,23 @@ static int device_open(struct inode *inode, struct file *file) {
     try_module_get(THIS_MODULE);
 
     pr_info("Device is opened by the user.\n");
+    snprintf(message, BUFLEN, "Device accessed %ld times\n", ++counter);
 
     return SUCCESS;
 }
 
 static ssize_t device_read(struct file *filp, char __user *buffer, size_t length, loff_t *offset) {
-    pr_alert("Reading from this module is not supported.\n");
+    int bytes_read = 0;
 
-    return -EINVAL;
+    while(bytes_read < length && *(message + *offset)) {
+        put_user(*(message + (*offset)++), buffer++);
+        bytes_read++;
+    }
+
+    if(!bytes_read)
+        *offset = 0;
+
+    return bytes_read;
 }
 
 static ssize_t device_write(struct file *filp, const char __user *buffer, size_t length, loff_t *offset) {
