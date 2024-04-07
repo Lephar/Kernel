@@ -1,11 +1,11 @@
 # Linux Kernel Module Development
 Dependencies, configurations and project files for Linux Kernel Module Development journey.
 
-## Development Environment
+## Build Dependencies
 ### Basic Setup
 Kernel headers and build tools are needed to compile kernel modules. This guide will detail instructions for Arch Linux. You can also follow your distro-specific instructions to install these requirements:
 ```
-pacman -Syu base-devel linux-headers
+sudo pacman -Syu base-devel linux-headers
 ```
 That's it! You are ready to compile your own kernel modules!
 
@@ -14,7 +14,7 @@ Although the headers are enough to successfuly build the module, it is recommend
 
 Following packages are needed to build your own kernel:
 ```
-pacman -Syu xmlto kmod inetutils bc libelf git cpio perl tar xz 
+sudo pacman -Syu xmlto kmod inetutils bc libelf git cpio perl tar xz 
 ```
 
 Clone this repository with `--recursive` argument to also clone aforementioned repository:
@@ -92,10 +92,9 @@ To switch whole toolchain:
 make LLVM=1 -j$(nproc) all
 ```
 
-Note that it is important to specify the same toolchain parameter with ALL above `make` command.
+Note that it is important to specify the same toolchain parameter with ALL above `make` commands, including config generation lines.
 
 While using the `LLVM` toolchain, `clangd` is the obvious language server choice. Its compilation database is generated with the exact same script.
-
 
 You must then copy the created `compile_commands.json` file into root of your workspace directory and you are good to go!
 
