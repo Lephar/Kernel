@@ -26,7 +26,8 @@ static struct file_operations fops = {
 static atomic_t already_open = ATOMIC_INIT(CDEV_NOT_IN_USE);
 
 static size_t counter = 0;
-static char message[BUFLEN];
+static char in_msg[BUFLEN];
+static char out_msg[BUFLEN];
 
 static int __init chardev_init(void)
 {
@@ -97,8 +98,8 @@ static int device_open(struct inode *inode, struct file *file) {
 
     try_module_get(THIS_MODULE);
 
-    pr_info("Device is opened by the user.\n");
-    snprintf(message, BUFLEN, "Device is accessed %ld times\n", ++counter);
+    pr_info("Device is opened by the user\n");
+    snprintf(out_msg, BUFLEN, "Device is accessed %ld times\n", ++counter);
 
     return SUCCESS;
 }
@@ -106,13 +107,13 @@ static int device_open(struct inode *inode, struct file *file) {
 static ssize_t device_read(struct file *filp, char __user *buffer, size_t length, loff_t *offset) {
     int bytes_read = 0;
 
-    while(bytes_read < length && *(message + *offset)) {
-        put_user(*(message + (*offset)++), buffer++);
+    while(bytes_read < length && *(out_msg + *offset)) {
+        put_user(*(out_msg + (*offset)++), buffer++);
         bytes_read++;
     }
 
     if(!bytes_read) {
-        pr_info("Message successfuly read by the user:\n\t%s\n", message);
+        pr_info("Message successfuly read by the user:\n\t%s\n", out_msg);
         *offset = 0;
     }
 
@@ -120,16 +121,24 @@ static ssize_t device_read(struct file *filp, char __user *buffer, size_t length
 }
 
 static ssize_t device_write(struct file *filp, const char __user *buffer, size_t length, loff_t *offset) {
-    pr_alert("Writing to this module is not supported.\n");
+    int bytes_written = 0;
 
-    return -EINVAL;
+    while(bytes_written < length && bytes_written < BUFLEN - 1) {
+        get_user(in_msg[bytes_written], buffer + bytes_written);
+        bytes_written++;
+    }
+
+    in_msg[bytes_written] = '\0';
+    pr_info("Message written by the user:\n\t%s\n", in_msg);
+
+    return bytes_written;
 }
 
 static int device_release(struct inode *inode, struct file *file) {
-    atomic_set(&already_open, CDEV_NOT_IN_USE);
     module_put(THIS_MODULE);
+    atomic_set(&already_open, CDEV_NOT_IN_USE);
 
-    pr_info("Device is released.\n");
+    pr_info("Device is released\n");
 
     return SUCCESS;
 }
