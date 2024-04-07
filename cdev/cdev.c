@@ -39,7 +39,7 @@ static int __init chardev_init(void)
     major_number = MAJOR(dev);
     minor_offset = MINOR(dev);
 
-    pr_info("Allocated character device region:\n");
+    pr_info("Character device region allocated:\n");
     pr_info("\tMajor number: %d\n", major_number);
     pr_info("\tMinor number offset: %d\n", minor_offset);
     pr_info("\tMinor number count: %d\n", minor_count);
@@ -53,6 +53,8 @@ static int __init chardev_init(void)
         goto error_cdev_add;
     }
 
+    pr_info("Character device initialized and added to the system\n");
+
     class = class_create(DEVICE_NAME);
 
     if(IS_ERR(class)) {
@@ -60,6 +62,8 @@ static int __init chardev_init(void)
         pr_alert("Class creation failed with error code %ld\n", error);
         goto error_class_create;
     }
+
+    pr_info("Device class structure created for the device\n");
 
     device = device_create(class, NULL, dev, NULL, DEVICE_NAME);
 
@@ -69,7 +73,7 @@ static int __init chardev_init(void)
         goto error_device_create;
     }
 
-    pr_info("/dev/%s is created\n", DEVICE_NAME);
+    pr_info("Device created and registered at /dev/%s\n", DEVICE_NAME);
 
     return 0;
 
@@ -80,15 +84,27 @@ static int __init chardev_init(void)
     error_cdev_add:
         unregister_chrdev_region(dev, minor_count);
     error_alloc_chrdev_region:
-        return error;
+        pr_info("Cleaned up\n");
+
+    return error;
 }
 
 static void __exit chardev_exit(void)
 {
     device_destroy(class, dev);
+    pr_info("Device destroyed and unregistered from /dev/%s\n", DEVICE_NAME);
+
     class_destroy(class);
+    pr_info("Device class structure destroyed\n");
+
     cdev_del(&cdev);
+    pr_info("Character device deleted\n");
+
     unregister_chrdev_region(dev, minor_count);
+    pr_info("Character device region unregistered:\n");
+    pr_info("\tMajor number: %d\n", major_number);
+    pr_info("\tMinor number offset: %d\n", minor_offset);
+    pr_info("\tMinor number count: %d\n", minor_count);
 }
 
 module_init(chardev_init);
