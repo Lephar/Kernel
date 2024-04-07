@@ -98,7 +98,7 @@ static int device_open(struct inode *inode, struct file *file) {
     try_module_get(THIS_MODULE);
 
     pr_info("Device is opened by the user.\n");
-    snprintf(message, BUFLEN, "Device accessed %ld times\n", ++counter);
+    snprintf(message, BUFLEN, "Device is accessed %ld times\n", ++counter);
 
     return SUCCESS;
 }
@@ -111,8 +111,10 @@ static ssize_t device_read(struct file *filp, char __user *buffer, size_t length
         bytes_read++;
     }
 
-    if(!bytes_read)
+    if(!bytes_read) {
+        pr_info("Message successfuly read by the user:\n\t%s\n", message);
         *offset = 0;
+    }
 
     return bytes_read;
 }
