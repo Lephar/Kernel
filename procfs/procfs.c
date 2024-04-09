@@ -14,51 +14,54 @@ static const struct proc_ops proc_ops = {
 static char in_msg[BUFLEN];
 static char out_msg[BUFLEN];
 
+static size_t out_msg_len;
+
 static int __init procfs_init(void)
 {
     proc_entry = proc_create(PROCFS_NAME, 0644, NULL, &proc_ops);
 
     if(!proc_entry) {
-        proc_remove(proc_entry);
         pr_alert("Failed to create proc entry\n");
         return -ENOMEM;
     }
 
     pr_info("Created proc entry: /proc/%s\n", PROCFS_NAME);
+
     snprintf(out_msg, BUFLEN, "Message from the kernel module!\n");
+    out_msg_len = strnlen(out_msg, BUFLEN);
 
     return SUCCESS;
 }
 
 static ssize_t proc_read(struct file *filp, char __user *buffer, size_t length, loff_t *offset) {
-    int bytes_read = 0;
+    size_t bytes_remained = out_msg_len - *offset;
 
-    while(bytes_read < length && *(out_msg + *offset)) {
-        put_user(*(out_msg + (*offset)++), buffer++);
-        bytes_read++;
-    }
-
-    if(!bytes_read) {
-        pr_info("Message successfuly read by the user:\n\t%s\n", out_msg);
-        pr_info("File read:\n\t%s\n", filp->f_path.dentry->d_name.name);
+    if(!bytes_remained) {
+        pr_info("Message successfully read by the user:\n\t%s\n", out_msg);
         *offset = 0;
+        return 0;
     }
 
-    return bytes_read;
+    size_t bytes_to_be_copied = min(bytes_remained, length);
+    size_t bytes_not_copied = copy_to_user(buffer, out_msg + *offset, bytes_to_be_copied);
+    size_t bytes_copied = bytes_to_be_copied - bytes_not_copied;
+
+    (*offset) += bytes_copied;
+    return bytes_copied;
 }
 
 static ssize_t proc_write(struct file *filp, const char __user *buffer, size_t length, loff_t *offset) {
-    int bytes_written = 0;
+    size_t bytes_to_be_copied = min(length, BUFLEN - 1);
+    size_t bytes_not_copied = copy_from_user(in_msg + *offset, buffer, bytes_to_be_copied);
+    size_t bytes_copied = bytes_to_be_copied - bytes_not_copied;
 
-    while(bytes_written < length && bytes_written < BUFLEN - 1) {
-        get_user(in_msg[bytes_written], buffer + bytes_written);
-        bytes_written++;
+    if(!bytes_not_copied) {
+        in_msg[bytes_copied] = '\0';
+        pr_info("Message written by the user:\n\t%s\n", in_msg);
     }
 
-    in_msg[bytes_written] = '\0';
-    pr_info("Message written by the user:\n\t%s\n", in_msg);
-
-    return bytes_written;
+    (*offset) += bytes_copied;
+    return bytes_copied;
 }
 
 static void __exit procfs_exit(void)
