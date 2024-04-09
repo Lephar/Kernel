@@ -113,7 +113,7 @@ static ssize_t device_read(struct file *filp, char __user *buffer, size_t length
     }
 
     if(!bytes_read) {
-        pr_info("Message successfuly read by the user:\n\t%s\n", out_msg);
+        pr_info("Message successfully read by the user:\n\t%s\n", out_msg);
         *offset = 0;
     }
 
