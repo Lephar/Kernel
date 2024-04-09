@@ -37,7 +37,7 @@ When you fetch the updated source code and some new entries are added to the con
 make olddefconfig
 ```
 
-Then compile the Linux kernel and configured modules with all the available threads. This is equivalent to calling `vmlinux`, `modules` and `bzImage` separately:
+Then compile the Linux kernel and configured modules with all the available threads. This is equivalent to calling `make` with `vmlinux`, `modules` and `bzImage` separately:
 ```
 make -j$(nproc) all
 ```
