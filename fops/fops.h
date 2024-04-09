@@ -5,14 +5,12 @@
 #include <linux/init.h>
 #include <linux/cdev.h>
 #include <linux/types.h>
-#include <linux/delay.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/device.h>
 #include <linux/atomic.h>
 #include <linux/printk.h>
 #include <linux/uaccess.h>
-#include <linux/version.h>
 
 #define SUCCESS 0
 #define BUFLEN 256
