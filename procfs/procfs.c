@@ -6,8 +6,8 @@ MODULE_DESCRIPTION("Proc Entry Module");
 
 static struct proc_dir_entry* proc_entry;
 
-static const struct proc_ops proc_ops = { 
-    .proc_read = proc_read, 
+static const struct proc_ops proc_ops = {
+    .proc_read = proc_read,
     .proc_write = proc_write
 };
 
@@ -67,7 +67,7 @@ static ssize_t proc_write(struct file *filp, const char __user *buffer, size_t l
 static void __exit procfs_exit(void)
 {
     proc_remove(proc_entry);
-    pr_info("Proc entry removed: /dev/%s\n", PROCFS_NAME);
+    pr_info("Proc entry removed: /proc/%s\n", PROCFS_NAME);
 }
 
 module_init(procfs_init);

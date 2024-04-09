@@ -12,7 +12,7 @@ MODULE_DESCRIPTION("Hello World Module");
 static int __init hello_init(void)
 {
     pr_info("Hello World.\n");
-    
+
     return 0;
 }
 

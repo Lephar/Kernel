@@ -17,8 +17,8 @@
 #define DEVICE_NAME "fops"
 
 enum {
-    CDEV_NOT_IN_USE = 0, 
-    CDEV_EXCLUSIVE_OPEN = 1, 
+    CDEV_NOT_IN_USE = 0,
+    CDEV_EXCLUSIVE_OPEN = 1,
 };
 
 static int device_open(struct inode*, struct file*);

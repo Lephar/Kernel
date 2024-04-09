@@ -15,7 +15,7 @@ MODULE_DESCRIPTION("Sequence File Module");
 
 static void* seq_start(struct seq_file* seq_file, loff_t* offset) {
     static unsigned long counter = 0;
-    
+
     if(!*offset)
         return &counter;
 
