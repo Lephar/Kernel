@@ -7,24 +7,35 @@ Kernel headers and build tools are needed to compile kernel modules. This guide 
 ```
 sudo pacman -Syu base-devel linux-headers
 ```
-That's it! You are ready to compile your own kernel modules!
+
+Clone this repository with the following command:
+```
+git clone git@github.com:Lephar/Kernel.git
+```
+
+Now, change into the repository directory:
+```
+cd Kernel
+```
+
+That's it! You are now ready to compile the example kernel modules!
 
 ### Mainline Setup
-Although the headers are enough to successfully build the module, it is recommended to configure and build your own kernel to help with our specific workflow needs. This repository includes reference to [Linus Torvalds's mainline Linux mirror](https://github.com/torvalds/linux) as submodule. I try to keep it as up-to-date as possible by bumping it to latest release tag. You can follow the instructions to build and install the mainline kernel.
+Although the headers are enough to successfully build the module, it is recommended to configure and build your own kernel to help with our specific workflow needs. We can use latest release tag of [Linus Torvalds's mainline Linux mirror](https://github.com/torvalds/linux) for that purpose. Follow these instructions to build and install the mainline kernel.
 
 Following packages are needed to build your own kernel:
 ```
-sudo pacman -Syu xmlto kmod inetutils bc libelf git cpio perl tar xz 
+sudo pacman -Syu xmlto kmod inetutils bc libelf git cpio perl tar xz
 ```
 
-Clone this repository with `--recursive` argument to also clone aforementioned repository:
+Clone mainline kernel source into this repository directory with the following command:
 ```
-git clone --recursive git@github.com:Lephar/Kernel.git
+git clone git@github.com:torvalds/linux.git
 ```
 
-Change into Linux directory:
+Change into this directory:
 ```
-cd Kernel/linux
+cd linux
 ```
 
 Configure the kernel to your taste using one of the following with `make` command: `config`, `menuconfig`, `nconfig`, `gconfig`, `xconfig`. Or you can simply use the default configuration, which is sufficient for most use cases:
@@ -57,14 +68,14 @@ Congratulations! You have configured, built and installed your own kernel. You a
 ### Distro-Patched Stable-Branch Setup
 Instead of Linus' mainline-branch, you can acquire [Greg Kroah-Hartman's stable-branch mirror](https://github.com/gregkh/linux). This branch has minor version tags which gets the security updates on top of mainline-branch.
 
-Better yet, you can get to your distro's kernel repository, which are usually based on stable-branch kernel. These branches get distro-specific patches optimized to your distro's use case, on top of official security updates. This setup will offer more security and more compatibility with your current system. We will use latest release tag of [Arch Linux kernel sources, with patches](https://github.com/archlinux/linux).
+Better yet, you can get to your distro's kernel repository, which are usually based on stable-branch kernel. These branches get distro-specific patches optimized to your distro's use case, on top of official security updates. This setup will offer more security and more compatibility with your current system. This repository includes reference to [Arch Linux kernel sources, with patches](https://github.com/archlinux/linux) as submodule. I try to keep it as up-to-date as possible by bumping it to latest release tag. You can clone this repository with the `--recursive` flag to also clone patched kernel source.
 
 Almost every distro also customizes the kernel configuration depending on their use case. So, we can skip all the hassle of configuration and get the current kernel config using `procfs` from running system and write it into `.config` file with following command. Just make sure to run it inside cloned kernel repository directory:
 ```
 zcat /proc/config.gz > .config
 ```
 
-If config has changed between versions, it's still necessary to manually configure or run `olddefconfig` over previous command. Other than that, it's all a similar process.
+If the config has changed between versions, it's still necessary to manually configure or run `olddefconfig` over previous command. Other than that, it's all the similar process.
 
 ## Compiler Support
 
