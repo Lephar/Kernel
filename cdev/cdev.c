@@ -1,8 +1,6 @@
 #include <linux/fs.h>
 #include <linux/cdev.h>
 #include <linux/init.h>
-#include <linux/types.h>
-#include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/device.h>
 #include <linux/printk.h>
@@ -22,8 +20,8 @@ static int minor_count = 1;
 
 static dev_t dev;
 static struct cdev cdev;
-static struct class* class;
-static struct device* device;
+static struct class *class;
+static struct device *device;
 static struct file_operations empty_fops;
 
 static int __init chardev_init(void)

@@ -17,14 +17,14 @@ static struct kobject *sysfs_module;
 
 static int exported_variable = 0;
 
-static ssize_t exported_variable_show(struct kobject* kobj, struct kobj_attribute* attr, char* buffer) {
+static ssize_t exported_variable_show(struct kobject *kobj, struct kobj_attribute *attr, char *buffer) {
     int result = sprintf(buffer, "%d\n", exported_variable);
     pr_info("%s value queried by the user at the value of %d\n", __stringify(exported_variable), exported_variable);
 
     return result;
 }
 
-static ssize_t exported_variable_store(struct kobject* kobj, struct kobj_attribute* attr, const char* buffer, size_t length) {
+static ssize_t exported_variable_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buffer, size_t length) {
     sscanf(buffer, "%d", &exported_variable);
     pr_info("%s value changed to %d\n", __stringify(exported_variable), exported_variable);
 

@@ -18,7 +18,7 @@ static int hello_array[5] = {0, 1, 2, 3, 4};
 module_param_array(hello_array, int, &hello_length, 0);
 MODULE_PARM_DESC(hello_array, "An example array");
 
-static char* hello_string = "World";
+static char *hello_string = "World";
 module_param(hello_string, charp, 0);
 MODULE_PARM_DESC(hello_string, "An example char array");
 

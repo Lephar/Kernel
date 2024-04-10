@@ -4,7 +4,7 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Lephar");
 MODULE_DESCRIPTION("Proc Entry Module");
 
-static struct proc_dir_entry* proc_entry;
+static struct proc_dir_entry *proc_entry;
 
 static const struct proc_ops proc_ops = {
     .proc_read = proc_read,

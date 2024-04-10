@@ -1,7 +1,5 @@
 #include <linux/fs.h>
 #include <linux/init.h>
-#include <linux/types.h>
-#include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/printk.h>
 #include <linux/proc_fs.h>
@@ -13,7 +11,7 @@ MODULE_DESCRIPTION("Sequence File Module");
 
 #define PROCFS_NAME "seqfile"
 
-static void* seq_start(struct seq_file* seq_file, loff_t* offset) {
+static void *seq_start(struct seq_file *seq_file, loff_t *offset) {
     static unsigned long counter = 0;
 
     if(!*offset)
@@ -23,20 +21,20 @@ static void* seq_start(struct seq_file* seq_file, loff_t* offset) {
     return NULL;
 }
 
-static void* seq_next(struct seq_file* seq_file, void* data, loff_t* offset) {
-    (*(unsigned long*)data)++;
+static void *seq_next(struct seq_file *seq_file, void *data, loff_t *offset) {
+    (*(unsigned long *)data)++;
     (*offset)++;
 
     return NULL;
 }
 
-static int seq_show(struct seq_file* seq_file, void* data) {
-    seq_printf(seq_file, "Counter: %lu\n", *(unsigned long*)data);
+static int seq_show(struct seq_file *seq_file, void *data) {
+    seq_printf(seq_file, "Counter: %lu\n", *(unsigned long *)data);
 
     return 0;
 }
 
-static void seq_stop(struct seq_file* seq_file, void* data) {
+static void seq_stop(struct seq_file *seq_file, void *data) {
     return;
 }
 
@@ -47,11 +45,11 @@ static struct seq_operations seq_ops = {
     .stop = seq_stop
 };
 
-static int proc_open(struct inode* inode, struct file* file) {
-    return seq_open(file, &seq_ops);
+static int proc_open(struct inode *inode, struct file *filp) {
+    return seq_open(filp, &seq_ops);
 }
 
-static struct proc_dir_entry* proc_entry;
+static struct proc_dir_entry *proc_entry;
 
 static const struct proc_ops proc_ops = {
     .proc_open = proc_open,

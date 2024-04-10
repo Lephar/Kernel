@@ -13,8 +13,8 @@ static int minor_count = 1;
 
 static dev_t dev;
 static struct cdev cdev;
-static struct class* class;
-static struct device* device;
+static struct class *class;
+static struct device *device;
 
 static struct file_operations fops = {
     .open = device_open,
@@ -92,7 +92,7 @@ static int __init chardev_init(void)
     return error;
 }
 
-static int device_open(struct inode *inode, struct file *file) {
+static int device_open(struct inode *inode, struct file *filp) {
     if(atomic_cmpxchg(&already_open, CDEV_NOT_IN_USE, CDEV_EXCLUSIVE_OPEN))
         return -EBUSY;
 
@@ -134,7 +134,7 @@ static ssize_t device_write(struct file *filp, const char __user *buffer, size_t
     return bytes_written;
 }
 
-static int device_release(struct inode *inode, struct file *file) {
+static int device_release(struct inode *inode, struct file *filp) {
     module_put(THIS_MODULE);
     atomic_set(&already_open, CDEV_NOT_IN_USE);
 
