@@ -4,76 +4,47 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Lephar");
 MODULE_DESCRIPTION("IOCTL Device Module");
 
-static int result;
-static long error;
+static struct class *class;
+static struct device *device;
 
-static int major_number = 0;
-static int minor_offset = 0;
-static int minor_count = 1;
-
-static dev_t dev;
-static struct cdev cdev;
-static struct class* class;
-static struct device* device;
+static long ioctl_arg = 0;
+static char message[BUFLEN];
 
 static struct file_operations fops = {
     .open = device_open,
     .read = device_read,
-    .write = device_write,
     .unlocked_ioctl = device_ioctl,
     .release = device_release
 };
 
 static atomic_t already_open = ATOMIC_INIT(CDEV_NOT_IN_USE);
 
-static size_t counter = 0;
-static char in_msg[BUFLEN];
-static char out_msg[BUFLEN];
-
 static int __init ioctl_init(void)
 {
-    result = alloc_chrdev_region(&dev, minor_offset, minor_count, DEVICE_NAME);
+    int result = register_chrdev(MAJOR_NUM, DEVICE_NAME, &fops);
 
     if(result) {
-        error = result;
-        pr_alert("Allocating major number failed with error code %ld\n", error);
-        goto error_alloc_chrdev_region;
+        pr_alert("Allocating major number failed with error code %d\n", result);
+        goto error_register_chrdev;
     }
 
-    major_number = MAJOR(dev);
-    minor_offset = MINOR(dev);
-
-    pr_info("Character device region allocated:\n");
-    pr_info("\tMajor number: %d\n", major_number);
-    pr_info("\tMinor number offset: %d\n", minor_offset);
-    pr_info("\tMinor number count: %d\n", minor_count);
-
-    cdev_init(&cdev, &fops);
-    result = cdev_add(&cdev, dev, minor_count);
-
-    if(result) {
-        error = result;
-        pr_alert("Adding character device failed with error code %ld\n", error);
-        goto error_cdev_add;
-    }
-
-    pr_info("Character device initialized and added to the system\n");
+    pr_info("Character device registered to the system\n");
 
     class = class_create(DEVICE_NAME);
 
     if(IS_ERR(class)) {
-        error = PTR_ERR(class);
-        pr_alert("Class creation failed with error code %ld\n", error);
+        result = PTR_ERR(class);
+        pr_alert("Class creation failed with error code %d\n", result);
         goto error_class_create;
     }
 
     pr_info("Device class structure created for the device\n");
 
-    device = device_create(class, NULL, dev, NULL, DEVICE_NAME);
+    device = device_create(class, NULL, MKDEV(MAJOR_NUM, 0), NULL, DEVICE_NAME);
 
     if(IS_ERR(device)) {
-        error = PTR_ERR(device);
-        pr_alert("Device creation failed with error code %ld\n", error);
+        result = PTR_ERR(device);
+        pr_alert("Device creation failed with error code %d\n", result);
         goto error_device_create;
     }
 
@@ -84,72 +55,66 @@ static int __init ioctl_init(void)
     error_device_create:
         class_destroy(class);
     error_class_create:
-        cdev_del(&cdev);
-    error_cdev_add:
-        unregister_chrdev_region(dev, minor_count);
-    error_alloc_chrdev_region:
+        unregister_chrdev(MAJOR_NUM, DEVICE_NAME);
+    error_register_chrdev:
         pr_info("Cleaned up\n");
 
-    return error;
+    return result;
 }
 
-static int device_open(struct inode *inode, struct file *file) {
-    if(atomic_cmpxchg(&already_open, CDEV_NOT_IN_USE, CDEV_EXCLUSIVE_OPEN))
-        return -EBUSY;
-
+static int device_open(struct inode *inode, struct file *filp) {
     try_module_get(THIS_MODULE);
-
     pr_info("Device is opened by the user\n");
-    snprintf(out_msg, BUFLEN, "Device is accessed %ld times\n", ++counter);
 
     return SUCCESS;
 }
 
 static ssize_t device_read(struct file *filp, char __user *buffer, size_t length, loff_t *offset) {
+    if(atomic_cmpxchg(&already_open, CDEV_NOT_IN_USE, CDEV_EXCLUSIVE_OPEN))
+        return -EBUSY;
+
     int bytes_read = 0;
 
-    while(bytes_read < length && *(out_msg + *offset)) {
-        put_user(*(out_msg + (*offset)++), buffer++);
+    snprintf(message, BUFLEN, "Current %s value: %lu\n", __stringify(ioctl_arg), ioctl_arg);
+
+    while(bytes_read < length && *(message + *offset)) {
+        put_user(*(message + (*offset)++), buffer++);
         bytes_read++;
     }
 
     if(!bytes_read) {
-        pr_info("Message successfully read by the user:\n\t%s\n", out_msg);
+        pr_info("Message successfully read by the user:\n\t%s\n", message);
         *offset = 0;
     }
+
+    atomic_set(&already_open, CDEV_NOT_IN_USE);
 
     return bytes_read;
 }
 
-static ssize_t device_write(struct file *filp, const char __user *buffer, size_t length, loff_t *offset) {
-    int bytes_written = 0;
+static long device_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
+    if(atomic_cmpxchg(&already_open, CDEV_NOT_IN_USE, CDEV_EXCLUSIVE_OPEN))
+        return -EBUSY;
 
-    while(bytes_written < length && bytes_written < BUFLEN - 1) {
-        get_user(in_msg[bytes_written], buffer + bytes_written);
-        bytes_written++;
+    unsigned long result = SUCCESS;
+
+    if(cmd == IOCTL_VALSET) {
+        ioctl_arg = arg;
+        pr_info("Set %s: %lu\n", __stringify(ioctl_arg), ioctl_arg);
     }
 
-    in_msg[bytes_written] = '\0';
-    pr_info("Message written by the user:\n\t%s\n", in_msg);
+    else if(cmd == IOCTL_VALGET) {
+        result = put_user(ioctl_arg, (unsigned long __user *)arg);
+        pr_info("Get %s: %lu\n", __stringify(ioctl_arg), ioctl_arg);
+    }
 
-    return bytes_written;
-}
-
-static long device_ioctl(struct file *filp, unsigned int cmd, unsigned long arg) {
-    struct ioctl_data *ioctl_data = filp->private_data;
-
-    int result = 0;
-    unsigned char val;
-    struct ioctl_arg data;
-    memset(&data, 0, sizeof(data));
-
-    return 0L;
-}
-
-static int device_release(struct inode *inode, struct file *file) {
-    module_put(THIS_MODULE);
     atomic_set(&already_open, CDEV_NOT_IN_USE);
 
+    return result;
+}
+
+static int device_release(struct inode *inode, struct file *filp) {
+    module_put(THIS_MODULE);
     pr_info("Device is released\n");
 
     return SUCCESS;
@@ -157,20 +122,14 @@ static int device_release(struct inode *inode, struct file *file) {
 
 static void __exit ioctl_exit(void)
 {
-    device_destroy(class, dev);
+    device_destroy(class, MKDEV(MAJOR_NUM, 0));
     pr_info("Device destroyed and unregistered from /dev/%s\n", DEVICE_NAME);
 
     class_destroy(class);
     pr_info("Device class structure destroyed\n");
 
-    cdev_del(&cdev);
-    pr_info("Character device deleted\n");
-
-    unregister_chrdev_region(dev, minor_count);
-    pr_info("Character device region unregistered:\n");
-    pr_info("\tMajor number: %d\n", major_number);
-    pr_info("\tMinor number offset: %d\n", minor_offset);
-    pr_info("\tMinor number count: %d\n", minor_count);
+    unregister_chrdev(MAJOR_NUM, DEVICE_NAME);
+    pr_info("Character device unregistered\n");
 }
 
 module_init(ioctl_init);
