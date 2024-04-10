@@ -1,8 +1,28 @@
 #include "ioctl.h"
 
+#include <linux/fs.h>
+#include <linux/init.h>
+#include <linux/slab.h>
+#include <linux/cdev.h>
+#include <linux/module.h>
+#include <linux/device.h>
+#include <linux/atomic.h>
+#include <linux/printk.h>
+#include <linux/uaccess.h>
+
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Lephar");
 MODULE_DESCRIPTION("IOCTL Device Module");
+
+enum {
+    CDEV_NOT_IN_USE = 0,
+    CDEV_EXCLUSIVE_OPEN = 1,
+};
+
+static int device_open(struct inode *, struct file *);
+static ssize_t device_read(struct file *, char __user *, size_t, loff_t *);
+static long device_ioctl(struct file *, unsigned int, unsigned long);
+static int device_release(struct inode *, struct file *);
 
 static struct class *class;
 static struct device *device;
